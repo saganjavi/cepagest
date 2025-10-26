@@ -3,148 +3,155 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cepagest - Procesamiento de Facturas</title>
-  <link rel="stylesheet" href="styles.css?v=2">
+  <title>Cepagest</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a252f 0%, #2C3E50 50%, #34495E 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 100%;
+      color: #2C3E50;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2C3E50;
+      font-size: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #dee2e6;
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2C3E50;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #2C3E50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover {
+      background: #1a252f;
+    }
+
+    .error {
+      background: #fee;
+      color: #c00;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 14px;
+      border-left: 4px solid #c00;
+    }
+
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Cepagest</h1>
 
-  <!-- Pantalla de Login -->
-  <div id="loginScreen" class="screen active">
-    <div class="login-container">
-      <div class="login-card">
-        <div class="login-header">
-          <h1>Cepagest</h1>
-          <p>Procesamiento inteligente de facturas</p>
-        </div>
+    <div id="loginForm">
+      <div id="error" class="error"></div>
 
-        <form id="loginForm" class="login-form">
-          <div class="input-group">
-            <label for="password">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Ingresa tu contraseña"
-              required
-              autocomplete="current-password"
-            >
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-block">
-            Acceder
-          </button>
-
-          <div id="loginError" class="error-message" style="display: none;"></div>
-        </form>
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" placeholder="Ingresa tu contraseña" autofocus>
       </div>
+
+      <button onclick="login()">Acceder</button>
+    </div>
+
+    <div id="app" class="hidden">
+      <h2 style="margin-bottom: 20px;">Aplicación Cargada</h2>
+      <p style="margin-bottom: 20px;">Login exitoso. La funcionalidad completa se implementará paso a paso.</p>
+      <button onclick="logout()">Cerrar Sesión</button>
     </div>
   </div>
 
-  <!-- Pantalla Principal de la App -->
-  <div id="appScreen" class="screen">
-    <header class="app-header">
-      <div class="header-content">
-        <h1>Cepagest</h1>
-        <button id="logoutBtn" class="btn btn-secondary btn-sm">
-          Cerrar sesión
-        </button>
-      </div>
-    </header>
-
-    <main class="app-main">
-      <!-- Zona de carga de archivos -->
-      <section class="upload-section">
-        <div id="dropZone" class="drop-zone">
-          <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-            </path>
-          </svg>
-          <h3>Arrastra facturas aquí o haz clic para seleccionar</h3>
-          <p>Máximo 50 archivos PDF</p>
-          <input
-            type="file"
-            id="fileInput"
-            accept="application/pdf"
-            multiple
-            style="display: none;"
-          >
-          <button id="selectFilesBtn" class="btn btn-primary">
-            Seleccionar archivos
-          </button>
-        </div>
-
-        <div id="uploadProgress" class="upload-progress" style="display: none;">
-          <div class="progress-bar">
-            <div id="progressBarFill" class="progress-bar-fill"></div>
-          </div>
-          <p id="uploadStatus"></p>
-        </div>
-      </section>
-
-      <!-- Tabla de facturas -->
-      <section class="invoices-section">
-        <div class="section-header">
-          <h2>Facturas Cargadas <span id="invoiceCount" class="badge">0</span></h2>
-          <div class="action-buttons">
-            <button id="selectAllBtn" class="btn btn-secondary" disabled>
-              Seleccionar todas
-            </button>
-            <button id="processBtn" class="btn btn-primary" disabled>
-              Procesar seleccionadas
-            </button>
-            <button id="copyBtn" class="btn btn-success" disabled>
-              Copiar al portapapeles
-            </button>
-          </div>
-        </div>
-
-        <div class="table-container">
-          <table id="invoicesTable" class="invoices-table">
-            <thead>
-              <tr>
-                <th class="col-checkbox">
-                  <input type="checkbox" id="selectAllCheckbox">
-                </th>
-                <th class="col-filename">Nombre de archivo</th>
-                <th class="col-emisor">Emisor</th>
-                <th class="col-cif">CIF</th>
-                <th class="col-fecha">Fecha emisión</th>
-                <th class="col-importe">Sin IVA</th>
-                <th class="col-importe">Con IVA</th>
-                <th class="col-fecha">Fecha conformidad</th>
-                <th class="col-status">Estado</th>
-              </tr>
-            </thead>
-            <tbody id="invoicesTableBody">
-              <tr class="empty-state">
-                <td colspan="9">
-                  <div class="empty-message">
-                    <p>No hay facturas cargadas</p>
-                    <p class="empty-hint">Sube archivos PDF para comenzar</p>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-
-    <footer class="app-footer">
-      <p>Cepagest - Procesamiento inteligente con GPT-4 Vision</p>
-    </footer>
-  </div>
-
-  <!-- Toast de notificaciones -->
-  <div id="toast" class="toast"></div>
-
-  <!-- PDF.js desde CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
-    // Configurar PDF.js worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    async function login() {
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('error');
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('loginForm').classList.add('hidden');
+          document.getElementById('app').classList.remove('hidden');
+          localStorage.setItem('token', password);
+        } else {
+          errorDiv.textContent = data.message || 'Contraseña incorrecta';
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        errorDiv.textContent = 'Error de conexión';
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      location.reload();
+    }
+
+    // Enter para enviar
+    document.getElementById('password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') login();
+    });
   </script>
-  <script src="app.js"></script>
 </body>
 </html>
