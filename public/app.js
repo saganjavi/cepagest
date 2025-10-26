@@ -69,26 +69,38 @@ function formatCurrency(value) {
 // ========== AUTENTICACIÓN ==========
 
 async function login(password) {
+  console.log('=== INICIANDO LOGIN ===');
+  console.log('Password a enviar:', password);
+
   try {
+    console.log('Enviando petición a /api/login...');
+
     const response = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password })
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
     const data = await response.json();
+    console.log('Response data:', data);
 
     if (data.success) {
+      console.log('✅ Login exitoso');
       state.token = password;
       localStorage.setItem('authToken', password);
       switchScreen(elements.appScreen);
       loadInvoices();
     } else {
+      console.log('❌ Login fallido:', data.message);
+      console.log('Debug info:', data.debug);
       showLoginError(data.message || 'Contraseña incorrecta');
     }
   } catch (error) {
+    console.error('❌ Error en login:', error);
     showLoginError('Error de conexión');
-    console.error('Login error:', error);
   }
 }
 
