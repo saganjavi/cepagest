@@ -1,48 +1,42 @@
 const express = require('express');
-const multer = require('multer');
 const router = express.Router();
 
 // Almacenamiento en memoria de facturas
-// Estructura: { id, filename, buffer, uploadDate, processedData, status }
+// Estructura: { id, filename, imageBase64, uploadDate, processedData, status }
 const invoicesStore = new Map();
 let invoiceIdCounter = 1;
 
-// Configurar Multer para almacenar en memoria
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB max por archivo
-    files: 50 // Máximo 50 archivos
-  },
-  fileFilter: (req, file, cb) => {
-    // Validar que sean PDFs
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Solo se permiten archivos PDF'));
-    }
-  }
-});
-
-// POST /api/upload - Subir PDFs
-router.post('/', upload.array('pdfs', 50), (req, res) => {
+// POST /api/upload - Subir facturas (como imágenes base64)
+router.post('/', (req, res) => {
   try {
-    if (!req.files || req.files.length === 0) {
+    const { invoices } = req.body;
+
+    if (!invoices || !Array.isArray(invoices) || invoices.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'No se subieron archivos'
+        message: 'No se proporcionaron facturas'
+      });
+    }
+
+    if (invoices.length > 50) {
+      return res.status(400).json({
+        success: false,
+        message: 'Máximo 50 facturas por vez'
       });
     }
 
     const uploadedInvoices = [];
 
-    req.files.forEach(file => {
+    invoices.forEach(({ filename, imageBase64 }) => {
+      if (!filename || !imageBase64) {
+        return; // Saltar facturas inválidas
+      }
+
       const invoiceId = invoiceIdCounter++;
       const invoice = {
         id: invoiceId,
-        filename: file.originalname,
-        buffer: file.buffer,
+        filename: filename,
+        imageBase64: imageBase64,
         uploadDate: new Date().toISOString(),
         processedData: null,
         status: 'pending' // pending, processing, completed, error

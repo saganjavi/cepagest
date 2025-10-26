@@ -5,12 +5,14 @@ Webapp moderna para procesar facturas en PDF mediante OCR usando GPT-4 Vision de
 ## Características
 
 - **Carga masiva de PDFs**: Sube hasta 50 facturas simultáneamente con drag & drop
+- **Conversión en el navegador**: PDFs se convierten a imágenes usando PDF.js (sin dependencias nativas en servidor)
 - **OCR con IA**: Extrae datos automáticamente usando GPT-4 Vision
 - **Procesamiento secuencial**: Procesa facturas de forma controlada
-- **Actualización en tiempo real**: Visualiza el progreso de procesamiento en vivo
+- **Actualización en tiempo real**: Visualiza el progreso de procesamiento en vivo mediante Server-Sent Events
 - **Exportación a Excel**: Copia datos al portapapeles para pegarlos en hojas de cálculo
 - **Autenticación**: Acceso protegido por contraseña
 - **UI/UX moderna**: Diseño profesional y responsive
+- **Compatible con Vercel**: Sin dependencias nativas que requieran compilación
 
 ## Datos Extraídos
 
@@ -133,7 +135,6 @@ cepagest/
 │   ├── upload.js         # Endpoints de carga
 │   └── process.js        # Endpoints de procesamiento
 ├── services/
-│   ├── pdfConverter.js   # Conversión PDF a imagen
 │   └── ocrService.js     # Integración GPT-4 Vision
 ├── public/
 │   ├── index.html        # UI principal
@@ -200,11 +201,11 @@ Verifica que la variable de entorno `PASSWORD` esté configurada correctamente e
 - Comprueba que tengas créditos disponibles en OpenAI
 - Revisa los logs del servidor para más detalles
 
-### Canvas/PDF.js no funciona en Vercel
+### Límite de tamaño de payload
 
-Si hay problemas con las dependencias nativas, considera:
-- Usar la versión legacy de PDF.js
-- Configurar `includeFiles` en `vercel.json` si es necesario
+Las imágenes base64 pueden ser grandes. Si tienes problemas con el tamaño del payload:
+- Reduce la escala de conversión en `app.js` (línea 124: `const scale = 2.0`)
+- Procesa menos facturas simultáneamente
 
 ## Licencia
 

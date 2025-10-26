@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { invoicesStore } = require('./upload');
-const { convertPdfToImage } = require('../services/pdfConverter');
 const { extractInvoiceData } = require('../services/ocrService');
 
 // POST /api/process - Procesar facturas seleccionadas
@@ -51,17 +50,7 @@ router.post('/', async (req, res) => {
         message: `Procesando ${invoice.filename}...`
       });
 
-      // Paso 1: Convertir PDF a imagen
-      sendEvent({
-        type: 'progress',
-        invoiceId,
-        step: 'converting',
-        message: 'Convirtiendo PDF a imagen...'
-      });
-
-      const imageBase64 = await convertPdfToImage(invoice.buffer);
-
-      // Paso 2: Extraer datos con OCR
+      // Extraer datos con OCR (la imagen ya viene convertida del cliente)
       sendEvent({
         type: 'progress',
         invoiceId,
@@ -69,7 +58,7 @@ router.post('/', async (req, res) => {
         message: 'Extrayendo datos con OCR...'
       });
 
-      const extractedData = await extractInvoiceData(imageBase64);
+      const extractedData = await extractInvoiceData(invoice.imageBase64);
 
       // Guardar datos procesados
       invoice.processedData = extractedData;

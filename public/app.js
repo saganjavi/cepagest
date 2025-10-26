@@ -104,40 +104,101 @@ function checkAuth() {
   }
 }
 
+// ========== CONVERSIÓN PDF A IMAGEN ==========
+
+async function convertPdfToImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = async function(e) {
+      try {
+        const typedArray = new Uint8Array(e.target.result);
+
+        // Cargar el PDF
+        const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+
+        // Obtener la primera página
+        const page = await pdf.getPage(1);
+
+        // Configurar escala para mejor calidad
+        const scale = 2.0;
+        const viewport = page.getViewport({ scale });
+
+        // Crear canvas
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        // Renderizar la página
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise;
+
+        // Convertir a base64
+        const imageBase64 = canvas.toDataURL('image/png');
+        resolve(imageBase64);
+      } catch (error) {
+        reject(error);
+      }
+    };
+
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 // ========== CARGA DE ARCHIVOS ==========
 
 async function uploadFiles(files) {
   if (!files || files.length === 0) return;
 
-  const formData = new FormData();
-  Array.from(files).forEach(file => {
-    formData.append('pdfs', file);
-  });
-
   // Mostrar progress
   elements.uploadProgress.style.display = 'block';
   elements.progressBarFill.style.width = '0%';
-  elements.uploadStatus.textContent = 'Subiendo archivos...';
+  elements.uploadStatus.textContent = 'Procesando archivos...';
 
   try {
-    // Simular progreso
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-      progress += 10;
-      if (progress <= 90) {
-        elements.progressBarFill.style.width = `${progress}%`;
+    const invoices = [];
+    const totalFiles = files.length;
+
+    // Convertir cada PDF a imagen
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      elements.uploadStatus.textContent = `Convirtiendo ${i + 1}/${totalFiles}: ${file.name}`;
+      elements.progressBarFill.style.width = `${((i / totalFiles) * 90)}%`;
+
+      try {
+        const imageBase64 = await convertPdfToImage(file);
+        invoices.push({
+          filename: file.name,
+          imageBase64: imageBase64
+        });
+      } catch (error) {
+        console.error(`Error convirtiendo ${file.name}:`, error);
+        showToast(`Error al procesar ${file.name}`, 'error');
       }
-    }, 100);
+    }
+
+    if (invoices.length === 0) {
+      throw new Error('No se pudo convertir ningún archivo');
+    }
+
+    // Subir las imágenes al servidor
+    elements.uploadStatus.textContent = 'Subiendo al servidor...';
+    elements.progressBarFill.style.width = '95%';
 
     const response = await fetch('/api/upload', {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${state.token}`
       },
-      body: formData
+      body: JSON.stringify({ invoices })
     });
 
-    clearInterval(progressInterval);
     elements.progressBarFill.style.width = '100%';
 
     const data = await response.json();
