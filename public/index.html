@@ -407,7 +407,11 @@
         const data = await response.json();
 
         if (data.success) {
-          invoices = data.invoices;
+          // Combinar respuesta del servidor con imageBase64 del cliente
+          invoices = data.invoices.map((inv, index) => ({
+            ...inv,
+            imageBase64: converted[index].imageBase64
+          }));
           renderTable();
           statusText.textContent = `${converted.length} facturas cargadas`;
           setTimeout(() => {
@@ -535,9 +539,13 @@
             invoice.processedData = data.data;
             invoice.status = 'completed';
           } else {
+            console.error('Error procesando factura:', invoice.filename, data.message);
+            alert(`Error procesando ${invoice.filename}: ${data.message}`);
             invoice.status = 'error';
           }
         } catch (error) {
+          console.error('Error de conexión:', invoice.filename, error);
+          alert(`Error de conexión procesando ${invoice.filename}: ${error.message}`);
           invoice.status = 'error';
         }
 
