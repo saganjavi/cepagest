@@ -3,40 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cepagest</title>
+  <title>Cepagest - Procesamiento de Facturas</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      color: #2C3E50;
+    }
+
+    /* Login Screen */
+    #loginScreen {
       background: linear-gradient(135deg, #1a252f 0%, #2C3E50 50%, #34495E 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
     }
 
-    .container {
+    .login-container {
       background: white;
       padding: 40px;
       border-radius: 12px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
       max-width: 400px;
       width: 100%;
-      color: #2C3E50;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #2C3E50;
-      font-size: 32px;
-    }
+    h1 { text-align: center; margin-bottom: 30px; color: #2C3E50; font-size: 32px; }
 
-    .form-group {
-      margin-bottom: 20px;
-    }
+    .form-group { margin-bottom: 20px; }
 
     label {
       display: block;
@@ -47,7 +44,7 @@
       letter-spacing: 0.5px;
     }
 
-    input {
+    input[type="password"], input[type="file"] {
       width: 100%;
       padding: 12px;
       border: 2px solid #dee2e6;
@@ -56,10 +53,7 @@
       font-family: inherit;
     }
 
-    input:focus {
-      outline: none;
-      border-color: #2C3E50;
-    }
+    input:focus { outline: none; border-color: #2C3E50; }
 
     button {
       width: 100%;
@@ -75,9 +69,8 @@
       letter-spacing: 0.5px;
     }
 
-    button:hover {
-      background: #1a252f;
-    }
+    button:hover:not(:disabled) { background: #1a252f; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .error {
       background: #fee;
@@ -90,32 +83,220 @@
       border-left: 4px solid #c00;
     }
 
-    .hidden { display: none; }
+    .hidden { display: none !important; }
+
+    /* App Screen */
+    #appScreen { display: none; }
+    #appScreen.active { display: block; }
+
+    .app-header {
+      background: #2C3E50;
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .app-header h1 { margin: 0; font-size: 24px; }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid white;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+    .app-main { max-width: 1400px; margin: 0 auto; padding: 40px; }
+
+    /* Upload Zone */
+    .upload-zone {
+      border: 3px dashed #dee2e6;
+      border-radius: 12px;
+      padding: 60px;
+      text-align: center;
+      background: white;
+      margin-bottom: 40px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: #2C3E50;
+      background: #f8f9fa;
+    }
+
+    .upload-zone h3 { margin-bottom: 10px; color: #2C3E50; }
+    .upload-zone p { color: #6c757d; margin-bottom: 20px; }
+
+    /* Table */
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .table-header {
+      padding: 20px;
+      border-bottom: 2px solid #dee2e6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+    }
+
+    .table-header h2 { font-size: 20px; }
+
+    .action-buttons { display: flex; gap: 10px; }
+
+    .action-buttons button {
+      width: auto;
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6c757d;
+    }
+
+    tbody tr:hover { background: #f8f9fa; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pending { background: #e9ecef; color: #6c757d; }
+    .status-processing { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-error { background: #f8d7da; color: #721c24; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px;
+      color: #6c757d;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: #dee2e6;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #2C3E50;
+      transition: width 0.3s;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Cepagest</h1>
 
-    <div id="loginForm">
+  <!-- Login Screen -->
+  <div id="loginScreen">
+    <div class="login-container">
+      <h1>Cepagest</h1>
       <div id="error" class="error"></div>
-
       <div class="form-group">
         <label for="password">Contraseña</label>
         <input type="password" id="password" placeholder="Ingresa tu contraseña" autofocus>
       </div>
-
       <button onclick="login()">Acceder</button>
-    </div>
-
-    <div id="app" class="hidden">
-      <h2 style="margin-bottom: 20px;">Aplicación Cargada</h2>
-      <p style="margin-bottom: 20px;">Login exitoso. La funcionalidad completa se implementará paso a paso.</p>
-      <button onclick="logout()">Cerrar Sesión</button>
     </div>
   </div>
 
+  <!-- App Screen -->
+  <div id="appScreen">
+    <div class="app-header">
+      <h1>Cepagest</h1>
+      <button class="btn-secondary" onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <div class="app-main">
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <h3>Arrastra facturas PDF aquí o haz clic para seleccionar</h3>
+        <p>Máximo 50 archivos PDF</p>
+        <button type="button" style="width: auto; padding: 10px 30px;">Seleccionar Archivos</button>
+        <input type="file" id="fileInput" accept="application/pdf" multiple style="display: none;">
+        <div id="uploadProgress" class="progress-bar hidden">
+          <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+        </div>
+        <p id="uploadStatus" style="margin-top: 10px; font-size: 14px;"></p>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <div class="table-header">
+          <h2>Facturas (<span id="invoiceCount">0</span>)</h2>
+          <div class="action-buttons">
+            <button id="selectAllBtn" onclick="selectAll()" disabled>Seleccionar Todas</button>
+            <button id="processBtn" onclick="processSelected()" disabled>Procesar Seleccionadas</button>
+            <button id="copyBtn" onclick="copyToClipboard()" disabled style="background: #10b981;">Copiar al Portapapeles</button>
+          </div>
+        </div>
+
+        <table id="invoicesTable">
+          <thead>
+            <tr>
+              <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
+              <th>Archivo</th>
+              <th>Emisor</th>
+              <th>CIF</th>
+              <th>Fecha Emisión</th>
+              <th>Sin IVA</th>
+              <th>Con IVA</th>
+              <th>Fecha Conformidad</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="9" class="empty-state">No hay facturas cargadas. Sube archivos PDF para comenzar.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+
+  <script>
+    let token = null;
+    let invoices = [];
+    let selectedIds = new Set();
+
+    // ========== LOGIN ==========
     async function login() {
       const password = document.getElementById('password').value;
       const errorDiv = document.getElementById('error');
@@ -130,9 +311,10 @@
         const data = await response.json();
 
         if (data.success) {
-          document.getElementById('loginForm').classList.add('hidden');
-          document.getElementById('app').classList.remove('hidden');
+          token = password;
           localStorage.setItem('token', password);
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('appScreen').classList.add('active');
         } else {
           errorDiv.textContent = data.message || 'Contraseña incorrecta';
           errorDiv.style.display = 'block';
@@ -148,10 +330,242 @@
       location.reload();
     }
 
-    // Enter para enviar
     document.getElementById('password').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') login();
     });
+
+    // ========== PDF UPLOAD & CONVERSION ==========
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+      if (files.length > 0) handleFiles(files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      handleFiles(Array.from(e.target.files));
+      e.target.value = '';
+    });
+
+    async function handleFiles(files) {
+      if (files.length === 0) return;
+      if (files.length > 50) {
+        alert('Máximo 50 archivos');
+        return;
+      }
+
+      const progressBar = document.getElementById('uploadProgress');
+      const progressFill = document.getElementById('progressFill');
+      const statusText = document.getElementById('uploadStatus');
+
+      progressBar.classList.remove('hidden');
+      statusText.textContent = 'Convirtiendo PDFs...';
+
+      const converted = [];
+
+      for (let i = 0; i < files.length; i++) {
+        progressFill.style.width = `${(i / files.length) * 100}%`;
+        statusText.textContent = `Convirtiendo ${i + 1}/${files.length}: ${files[i].name}`;
+
+        try {
+          const imageBase64 = await convertPdfToImage(files[i]);
+          converted.push({
+            filename: files[i].name,
+            imageBase64: imageBase64
+          });
+        } catch (error) {
+          console.error('Error convirtiendo:', files[i].name, error);
+        }
+      }
+
+      progressFill.style.width = '100%';
+      statusText.textContent = 'Subiendo al servidor...';
+
+      // Upload to server
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ invoices: converted })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          invoices = data.invoices;
+          renderTable();
+          statusText.textContent = `${converted.length} facturas cargadas`;
+          setTimeout(() => {
+            progressBar.classList.add('hidden');
+            statusText.textContent = '';
+          }, 2000);
+        }
+      } catch (error) {
+        statusText.textContent = 'Error al subir';
+        console.error(error);
+      }
+    }
+
+    async function convertPdfToImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          try {
+            const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(e.target.result) }).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            resolve(canvas.toDataURL('image/png'));
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    // ========== TABLE RENDERING ==========
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      document.getElementById('invoiceCount').textContent = invoices.length;
+
+      if (invoices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No hay facturas cargadas.</td></tr>';
+        updateButtons();
+        return;
+      }
+
+      tbody.innerHTML = invoices.map(inv => {
+        const data = inv.processedData || {};
+        return `
+          <tr>
+            <td><input type="checkbox" ${selectedIds.has(inv.id) ? 'checked' : ''} onchange="toggleSelect(${inv.id})"></td>
+            <td>${inv.filename}</td>
+            <td>${data.nombreEmisor || '-'}</td>
+            <td>${data.cifEmisor || '-'}</td>
+            <td>${data.fechaEmision || '-'}</td>
+            <td>${data.importeSinIva || '-'}</td>
+            <td>${data.importeConIva || '-'}</td>
+            <td>${data.fechaConformidad || '-'}</td>
+            <td><span class="status-badge status-${inv.status}">${getStatusText(inv.status)}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      updateButtons();
+    }
+
+    function getStatusText(status) {
+      const map = { pending: 'Pendiente', processing: 'Procesando', completed: 'Completado', error: 'Error' };
+      return map[status] || status;
+    }
+
+    function toggleSelect(id) {
+      if (selectedIds.has(id)) selectedIds.delete(id);
+      else selectedIds.add(id);
+      updateButtons();
+    }
+
+    function selectAll() {
+      invoices.forEach(inv => selectedIds.add(inv.id));
+      renderTable();
+    }
+
+    function toggleSelectAll() {
+      if (document.getElementById('selectAllCheckbox').checked) selectAll();
+      else {
+        selectedIds.clear();
+        renderTable();
+      }
+    }
+
+    function updateButtons() {
+      document.getElementById('selectAllBtn').disabled = invoices.length === 0;
+      document.getElementById('processBtn').disabled = selectedIds.size === 0;
+      document.getElementById('copyBtn').disabled = !invoices.some(inv => inv.status === 'completed');
+    }
+
+    // ========== PROCESSING ==========
+    async function processSelected() {
+      const ids = Array.from(selectedIds);
+      if (ids.length === 0) return;
+
+      document.getElementById('processBtn').disabled = true;
+
+      for (const id of ids) {
+        const invoice = invoices.find(inv => inv.id === id);
+        if (!invoice) continue;
+
+        invoice.status = 'processing';
+        renderTable();
+
+        try {
+          const response = await fetch('/api/process', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ id, imageBase64: invoice.imageBase64 })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            invoice.processedData = data.data;
+            invoice.status = 'completed';
+          } else {
+            invoice.status = 'error';
+          }
+        } catch (error) {
+          invoice.status = 'error';
+        }
+
+        renderTable();
+      }
+
+      document.getElementById('processBtn').disabled = false;
+    }
+
+    // ========== COPY TO CLIPBOARD ==========
+    function copyToClipboard() {
+      const completed = invoices.filter(inv => inv.status === 'completed' && inv.processedData);
+      if (completed.length === 0) return;
+
+      const headers = ['Archivo', 'Emisor', 'CIF', 'Fecha Emisión', 'Sin IVA', 'Con IVA', 'Fecha Conformidad'];
+      const rows = completed.map(inv => {
+        const d = inv.processedData;
+        return [inv.filename, d.nombreEmisor, d.cifEmisor, d.fechaEmision, d.importeSinIva, d.importeConIva, d.fechaConformidad];
+      });
+
+      const tsv = [headers.join('\t'), ...rows.map(r => r.join('\t'))].join('\n');
+
+      navigator.clipboard.writeText(tsv).then(() => {
+        alert(`${completed.length} facturas copiadas al portapapeles`);
+      }).catch(err => {
+        console.error('Error:', err);
+      });
+    }
   </script>
 </body>
 </html>
