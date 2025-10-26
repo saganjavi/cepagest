@@ -1,3 +1,7 @@
+// DEBUG: Verificar que el script se carga
+console.log('=== APP.JS CARGADO ===');
+console.log('PDF.js disponible:', typeof pdfjsLib !== 'undefined');
+
 // Estado de la aplicación
 const state = {
   token: localStorage.getItem('authToken') || null,
@@ -486,12 +490,22 @@ function copyToClipboard() {
 
 // ========== EVENT LISTENERS ==========
 
+console.log('=== CONFIGURANDO EVENT LISTENERS ===');
+console.log('loginForm element:', elements.loginForm);
+
 // Login
-elements.loginForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const password = document.getElementById('password').value;
-  login(password);
-});
+if (elements.loginForm) {
+  elements.loginForm.addEventListener('submit', (e) => {
+    console.log('=== SUBMIT EVENT ===');
+    e.preventDefault();
+    const password = document.getElementById('password').value;
+    console.log('Password length:', password?.length);
+    login(password);
+  });
+  console.log('✅ Event listener de login configurado');
+} else {
+  console.error('❌ No se encontró el formulario de login');
+}
 
 // Logout
 elements.logoutBtn.addEventListener('click', logout);
