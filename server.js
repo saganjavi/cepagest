@@ -164,6 +164,7 @@ Si algún campo no está visible, usa "N/A". Responde SOLO con el JSON, sin text
   }
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Servidor en puerto ${PORT}`);
 });
