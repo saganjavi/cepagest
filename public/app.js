@@ -56,8 +56,18 @@ function hideLoginError() {
 }
 
 function switchScreen(screen) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  console.log('=== SWITCH SCREEN ===');
+  console.log('Target screen:', screen);
+  console.log('Screen id:', screen?.id);
+
+  document.querySelectorAll('.screen').forEach(s => {
+    console.log('Removing active from:', s.id);
+    s.classList.remove('active');
+  });
+
+  console.log('Adding active to:', screen?.id);
   screen.classList.add('active');
+  console.log('Active screens:', document.querySelectorAll('.screen.active').length);
 }
 
 function formatCurrency(value) {
@@ -91,7 +101,13 @@ async function login(password) {
       console.log('✅ Login exitoso');
       state.token = password;
       localStorage.setItem('authToken', password);
+
+      console.log('Cambiando a pantalla de app...');
+      console.log('elements.appScreen:', elements.appScreen);
+
       switchScreen(elements.appScreen);
+
+      console.log('Cargando facturas...');
       loadInvoices();
     } else {
       console.log('❌ Login fallido:', data.message);
