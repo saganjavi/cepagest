@@ -36,43 +36,72 @@ app.get('/api/debug-env', (req, res) => {
 
 // Endpoint de autenticación
 app.post('/api/login', (req, res) => {
-  const { password } = req.body;
+  try {
+    const { password } = req.body;
 
-  // Trim para eliminar espacios en blanco
-  const cleanPassword = password?.trim();
-  const envPassword = process.env.PASSWORD?.trim();
+    // Log para debug
+    console.log('=== LOGIN ATTEMPT ===');
+    console.log('Body recibido:', JSON.stringify(req.body));
+    console.log('Password del body:', password);
+    console.log('PASSWORD env existe:', !!process.env.PASSWORD);
+    console.log('PASSWORD env value:', process.env.PASSWORD);
+    console.log('====================');
 
-  // Log detallado para debug
-  console.log('=== LOGIN ATTEMPT ===');
-  console.log('Received password length:', cleanPassword?.length);
-  console.log('Received password (first 3 chars):', cleanPassword?.substring(0, 3));
-  console.log('Received password (last 3 chars):', cleanPassword?.substring(cleanPassword.length - 3));
-  console.log('Env password length:', envPassword?.length);
-  console.log('Env password (first 3 chars):', envPassword?.substring(0, 3));
-  console.log('Env password (last 3 chars):', envPassword?.substring(envPassword.length - 3));
-  console.log('Passwords match:', cleanPassword === envPassword);
-  console.log('====================');
+    if (!process.env.PASSWORD) {
+      return res.status(500).json({
+        success: false,
+        message: 'PASSWORD no configurado en servidor'
+      });
+    }
 
-  if (!envPassword) {
-    return res.status(500).json({
-      success: false,
-      message: 'Error de configuración: PASSWORD no está definido en variables de entorno'
-    });
-  }
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se recibió contraseña'
+      });
+    }
 
-  if (cleanPassword === envPassword) {
-    res.json({ success: true, message: 'Autenticación exitosa' });
-  } else {
-    // Mensaje más detallado cuando falla
-    res.status(401).json({
+    // Comparación simple y directa
+    const match = password === process.env.PASSWORD;
+
+    console.log('Comparación directa (sin trim):', match);
+
+    if (match) {
+      return res.json({
+        success: true,
+        message: 'Autenticación exitosa'
+      });
+    }
+
+    // Si falla, probar con trim
+    const matchWithTrim = password.trim() === process.env.PASSWORD.trim();
+    console.log('Comparación con trim:', matchWithTrim);
+
+    if (matchWithTrim) {
+      return res.json({
+        success: true,
+        message: 'Autenticación exitosa (con trim)'
+      });
+    }
+
+    // Si aún falla, devolver info de debug
+    return res.status(401).json({
       success: false,
       message: 'Contraseña incorrecta',
       debug: {
-        receivedLength: cleanPassword?.length,
-        expectedLength: envPassword?.length,
-        receivedFirst3: cleanPassword?.substring(0, 3),
-        expectedFirst3: envPassword?.substring(0, 3)
+        receivedLength: password.length,
+        expectedLength: process.env.PASSWORD.length,
+        receivedFirst3: password.substring(0, 3),
+        expectedFirst3: process.env.PASSWORD.substring(0, 3),
+        receivedLast3: password.substring(password.length - 3),
+        expectedLast3: process.env.PASSWORD.substring(process.env.PASSWORD.length - 3)
       }
+    });
+  } catch (error) {
+    console.error('Error en login:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error en el servidor: ' + error.message
     });
   }
 });
