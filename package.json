@@ -1,0 +1,22 @@
+{
+  "name": "cepagest",
+  "version": "1.0.0",
+  "description": "Webapp para procesamiento de facturas con OCR mediante GPT-4 Vision",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["facturas", "ocr", "gpt", "pdf"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.20.0",
+    "pdfjs-dist": "^3.11.174",
+    "canvas": "^2.11.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  }
+}
