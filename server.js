@@ -105,9 +105,9 @@ app.post('/api/process', authMiddleware, async (req, res) => {
       });
     }
 
-    // Llamar a GPT-4 Vision
+    // Llamar a GPT-4o (modelo actual con soporte de visión)
     const response = await openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
+      model: "gpt-4o",
       max_tokens: 1000,
       messages: [
         {
